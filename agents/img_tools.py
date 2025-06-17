@@ -5,59 +5,12 @@ import urllib.parse
 from pathlib import Path
 import time
 
-
-
-
-import os
-import sqlalchemy
-from google.cloud.sql.connector import Connector
-
-def get_cloud_sql_engine():
-    """Funzione riutilizzabile per connessione Cloud SQL"""
-    connector = Connector()
-    
-    def getconn():
-        return connector.connect(
-            os.getenv("CLOUD_SQL_CONNECTION_NAME"),
-            "pg8000",
-            user=os.getenv("CLOUD_SQL_USER"),
-            password=os.getenv("CLOUD_SQL_PASSWORD"),
-            db=os.getenv("CLOUD_SQL_DATABASE_NAME")
-        )
-    
-    return sqlalchemy.create_engine("postgresql+pg8000://", creator=getconn)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 async def download_and_save_image_auto_tool(
     tool_context: ToolContext,
     image_url: str
 ) -> dict:
     """
-    Tool per connettersi al database e  scaricare e salvare immagini con versioning automatico incrementale.
+    Tool per scaricare e salvare immagini con versioning automatico incrementale.
     Usa lo stesso filename per tutte le immagini per sfruttare il versioning nativo di ADK.
     
     Args:
@@ -68,14 +21,6 @@ async def download_and_save_image_auto_tool(
         dict: Risultato dell'operazione con status, filename, version incrementale e messaggi
     """
     try:
-        # ✅ CONNESSIONE DATABASE
-        try:
-            engine = get_cloud_sql_engine()
-            with engine.connect() as conn:
-                print("🔌 Connesso al database Cloud SQL")
-        except Exception as db_error:
-            print(f"⚠️ Errore connessione database: {db_error}")
-        
         # Normalizza l'URL per controlli consistenti
         normalized_url = image_url.strip()
         
@@ -205,7 +150,7 @@ async def download_multiple_images_tool(
     image_urls: str
 ) -> dict:
     """
-    Tool per connettersi al database e scaricare multiple immagini con versioning incrementale automatico.
+    Tool per scaricare multiple immagini con versioning incrementale automatico.
     Tutti gli URLs vengono salvati con lo stesso filename per sfruttare il versioning nativo di ADK.
     
     Args:
@@ -216,14 +161,6 @@ async def download_multiple_images_tool(
         dict: Risultato del batch download con versioning incrementale
     """
     try:
-        # ✅ CONNESSIONE DATABASE
-        try:
-            engine = get_cloud_sql_engine()
-            with engine.connect() as conn:
-                print("🔌 Connesso al database Cloud SQL")
-        except Exception as db_error:
-            print(f"⚠️ Errore connessione database: {db_error}")
-        
         # Parsing intelligente degli URLs
         if ', ' in image_urls:
             urls_list = [url.strip() for url in image_urls.split(', ') if url.strip()]
@@ -308,3 +245,10 @@ async def download_multiple_images_tool(
             "status": "error",
             "message": f"Errore nel processamento batch: {str(e)}"
         }
+
+
+
+
+
+
+
